@@ -1,0 +1,84 @@
+local Spool = {}
+
+local ver = "1"
+
+local rs = game:GetService("RunService")
+
+local Registry = require(script.Registry)
+local Loader = require(script.Loader)
+local Lifecycle = require(script.Lifecycle)
+local Network = require(script.Network)
+local Data = require(script.Data)
+
+-- service stuff
+
+function Spool.CreateService(service)
+	Registry.RegisterService(service)
+
+	return service
+end
+
+function Spool.GetService(name)
+	if rs:IsServer() then
+		return Registry.GetService(name)
+	end
+
+	return Network.GetService(name)
+end
+
+function Spool.AddServices(folder)
+	Loader.LoadServices(folder)
+end
+
+-- client stuff
+
+function Spool.CreateController(controller)
+	Registry.RegisterController(controller)
+
+	return controller
+end
+
+function Spool.GetController(name)
+	return Registry.GetController(name)
+end
+
+function Spool.AddControllers(folder)
+	Loader.LoadControllers(folder)
+end
+
+function Spool.StartServer()
+	local services = Registry.GetAllServices()
+
+	Network.BuildServer(services)
+	Lifecycle.Start(services)
+end
+
+function Spool.StartClient()
+	local controllers = Registry.GetAllControllers()
+
+	Lifecycle.Start(controllers)
+end
+
+-- signals
+
+function Spool.Signal(options)
+	return Network.CreateSignal(options)
+end
+
+-- function
+
+function Spool.UnreliableSignal(options)
+	return Network.CreateUnreliableSignal(options)
+end
+
+function Spool.Function(options)
+	return Network.CreateFunction(options)
+end
+
+-- data
+
+function Spool.CreateStore(name, template)
+	return Data.CreateStore(name, template)
+end
+
+return Spool
